@@ -3,8 +3,11 @@ import os
 import ghostscript
 
 PATH_TO_MERGED_PDFS = "./ExportedPDFs/"
+PATH_TO_OUTPUT = "./CompressedPDFs/"
 
+# Compression method #1.
 def compress_with_pdfsizeopt():
+    # Path names for PDFs to compress.
     pdfs_to_compress = ["." + PATH_TO_MERGED_PDFS + f for f in os.listdir(PATH_TO_MERGED_PDFS)]
 
     os.chdir("./pdfsizeopt/")
@@ -13,6 +16,7 @@ def compress_with_pdfsizeopt():
         # Add "--use-pngout=no" after "pdfsizeopt" if runtime is slow.
         subprocess.run(["cmd.exe", "/c", "pdfsizeopt", pdf_name, f"./{pdf_name}"])
 
+# Compression method #2 (better).
 def compress_with_ghostscript():
     # Path names for PDFs to compress.
     pdfs_to_compress = [PATH_TO_MERGED_PDFS + f for f in os.listdir(PATH_TO_MERGED_PDFS)]
@@ -29,8 +33,8 @@ def compress_with_ghostscript():
             "-dPDFSETTINGS=/screen",
             "-dColorImageDownsampleType=/Bicubic",
             "-dColorImageResolution=144", 
-            f"-sOutputFile={PATH_TO_MERGED_PDFS}output{index}.pdf", # output file
-            pdfs_to_compress[index],                                            # input file
+            f"-sOutputFile={PATH_TO_OUTPUT}output{index}.pdf", # output file
+            pdfs_to_compress[index],                           # input file
         ]
 
         # Compress with ghostscript.
