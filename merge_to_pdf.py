@@ -1,8 +1,10 @@
 from PIL import Image 
 import os
 import regex
+from app import *
 
-PATH_TO_FOLDERS = "./FoldersForMerging/"
+PATH_TO_FOLDERS = get_folders_to_merge_filepath()
+PATH_TO_MERGED_PDFS = "./MergedPDFs/" # Output folder
 
 # Regex used to check if file is an image.
 IS_IMAGE_REGEX = "^\.pdf|\.jpg|\.jpeg|\.tif|\.png|\.pdf$"
@@ -11,7 +13,7 @@ IS_IMAGE_REGEX = "^\.pdf|\.jpg|\.jpeg|\.tif|\.png|\.pdf$"
 folder_paths = []
 folder_names = []
 for folder_name in os.listdir(PATH_TO_FOLDERS):
-    folder_paths.append("./FoldersForMerging/" + folder_name + "/" )
+    folder_paths.append(PATH_TO_FOLDERS + folder_name + "/" )
     folder_names.append(folder_name)
 
 # Make a merged PDF of all images for a given folder.
@@ -24,7 +26,7 @@ def merge_to_pdf(filepath, filename):
     ]
 
     # Where to save the created PDF.
-    pdf_path = "./ExportedPDFs/" + filename + ".pdf"
+    pdf_path = PATH_TO_MERGED_PDFS + filename + ".pdf"
         
     # Merge images and save the PDF.
     images[0].save(

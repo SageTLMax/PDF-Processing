@@ -3,9 +3,9 @@ import stat
 import os
 
 # Set filepaths for pdfs to grab and where to send them.
-PATH_TO_ORIGINAL_PDFs = "./ExportedPDFs/"
+PATH_TO_ORIGINAL_PDFs = "./MergedPDFs/"
 PATH_TO_COMPRESSED_PDFS = "./CompressedPDFs/"
-PATH_TO_PROCESSED_PDFS = "./OCRProcessedPDFs/"
+PATH_TO_PROCESSED_PDFS = "./OCRProcessedPDFs/" # Output folder
 
 # Get file names of PDF files and set write permissions.
 pdfs_to_compress = []

@@ -2,7 +2,7 @@ import subprocess
 import os
 import ghostscript
 
-PATH_TO_MERGED_PDFS = "./ExportedPDFs/"
+PATH_TO_MERGED_PDFS = "./MergedPDFs/"
 PATH_TO_OUTPUT = "./CompressedPDFs/"
 
 # Compression method #1.
