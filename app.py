@@ -2,7 +2,7 @@ import streamlit as st
 from full_execute import *
 
 PATH_TO_CSS = "./app_style.css"
-folders_to_merge = "./FoldersForMerging"
+folders_to_merge = "./FoldersForMerging/"
 
 # For obtaining the filepath in other files.
 def get_folders_to_merge_filepath():
@@ -35,7 +35,7 @@ st.html("""
         1. To get started, input the location of the folders you want to merge into PDFs:
         </h2>
 """)
-folders_to_merge = st.text_input(label="Input filepath of parent folder then hit ENTER:")
+#folders_to_merge = st.text_input(label="Input filepath of parent folder then hit ENTER:")
 
 # STEP 2
 st.html("""
@@ -47,5 +47,5 @@ st.html("""
         (If you encounter an error, please ensure that the filepath that you input is correct.)
         </p>
 """)
-st.button(label="Generate PDFs!", key="generate_button", on_click=merge_compress_ocr())
+st.button(label="Generate PDFs!", key="generate_button", on_click=merge_compress_ocr)
 
