@@ -1,11 +1,14 @@
 import subprocess
 from pathlib import Path
+import os
 
 # Merge, compress, and add OCR all at once.
 def merge_compress_ocr():
     subprocess.run(["cmd.exe", "/c", "python", "merge_to_pdf.py"])
     subprocess.run(["cmd.exe", "/c", "python", "compress_pdf.py"])
     subprocess.run(["cmd.exe", "/c", "python", "ocr_pdf.py"])
+    os.startfile("OCRProcessedPDFs")
+
 
 # Remove the existing files inside of a designated folder.
 def clear_folder(filepath):
@@ -29,3 +32,5 @@ def clear_all_pdf_folders():
     clear_merged_pdfs_folder()
     clear_compressed_pdfs_folder()
     clear_ocr_pdfs_folder()
+
+

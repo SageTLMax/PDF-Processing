@@ -1,5 +1,6 @@
 import streamlit as st
 from full_execute import *
+import os
 
 PATH_TO_CSS = "./app_style.css"
 folders_to_merge = "./FoldersForMerging/"
@@ -32,20 +33,24 @@ st.html("""
 # STEP 1
 st.html("""
         <h2> 
-        1. To get started, input the location of the folders you want to merge into PDFs:
+        1. To get started, click the button, which will open a folder. 
+        Drag every folder you want to make a PDF for into this folder.
         </h2>
 """)
-#folders_to_merge = st.text_input(label="Input filepath of parent folder then hit ENTER:")
+def open_merge_folder():
+    os.startfile("FoldersForMerging")
+st.button(label="Step 1: Click me!", key="merge_folder_button", on_click=open_merge_folder)
 
 # STEP 2
 st.html("""
         <h2> 
-        2. Once you have chosen the location of folders you want to make PDFs for in Step 1, 
+        2. Once you have chosen the folders you want to make PDFs for in Step 1, 
         hit the button below:
         </h2>
-        <p>
-        (If you encounter an error, please ensure that the filepath that you input is correct.)
-        </p>
+        <ul>
+            <li> Please be patient, as this step can take some time to complete.</li>
+            <li> Once complete, the folder with OCR-processed PDFs will open automatically.</li>
+        </el>
 """)
-st.button(label="Generate PDFs!", key="generate_button", on_click=merge_compress_ocr)
+st.button(label="Step 2: Generate PDFs!", key="generate_button", on_click=merge_compress_ocr)
 
