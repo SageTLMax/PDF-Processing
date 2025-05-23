@@ -1,4 +1,5 @@
 import streamlit as st
+from full_execute import *
 
 PATH_TO_CSS = "./app_style.css"
 folders_to_merge = "./FoldersForMerging"
@@ -46,5 +47,5 @@ st.html("""
         (If you encounter an error, please ensure that the filepath that you input is correct.)
         </p>
 """)
-st.button(label="Generate PDFs!", key="generate_button")
+st.button(label="Generate PDFs!", key="generate_button", on_click=merge_compress_ocr())
 
