@@ -40,7 +40,9 @@ def compress_with_ghostscript():
         # Compress with ghostscript.
         ghostscript.Ghostscript(*args)
     
-    for pdf_num in range(len(pdfs_to_compress)):
-        compress_single_pdf(pdf_num)
 
-compress_with_ghostscript()
+    for pdf_num in range(len(pdfs_to_compress)):
+        # Compress PDF
+        compress_single_pdf(pdf_num)
+    
+    return 0

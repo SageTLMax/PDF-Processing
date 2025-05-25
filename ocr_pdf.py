@@ -7,6 +7,10 @@ PATH_TO_ORIGINAL_PDFs = "./MergedPDFs/"
 PATH_TO_COMPRESSED_PDFS = "./CompressedPDFs/"
 PATH_TO_PROCESSED_PDFS = "./OCRProcessedPDFs/" # Output folder
 
+is_finished = False
+def is_ocr_finished():
+    return is_finished
+
 # Get file names of PDF files and set write permissions.
 pdfs_to_compress = []
 for file_name in os.listdir(PATH_TO_COMPRESSED_PDFS):
@@ -16,12 +20,19 @@ for file_name in os.listdir(PATH_TO_COMPRESSED_PDFS):
 original_pdf_names = [file for file in os.listdir(PATH_TO_ORIGINAL_PDFs)]
 
 # Run OCR software on PDF files.
-for ind in range(len(pdfs_to_compress)):
-    subprocess.run([
-        "cmd.exe", 
-        "/c", 
-        "ocrmypdf", 
-        f"{PATH_TO_COMPRESSED_PDFS}{pdfs_to_compress[ind]}",     # Input file
-        f"{PATH_TO_PROCESSED_PDFS}{original_pdf_names[ind]}"     # Output file
-    ])
+def ocr_pdf_all():
+    for ind in range(len(pdfs_to_compress)):
+        # Run OCR
+        subprocess.run([
+            "cmd.exe", 
+            "/c", 
+            "ocrmypdf", 
+            f"{PATH_TO_COMPRESSED_PDFS}{pdfs_to_compress[ind]}",     # Input file
+            f"{PATH_TO_PROCESSED_PDFS}{original_pdf_names[ind]}"     # Output file
+        ])
+
+    # Open folder with finalized PDFs once finished.
+    os.startfile("OCRProcessedPDFs")
+    is_finished = True
+    return 0
 

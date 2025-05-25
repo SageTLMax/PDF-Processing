@@ -1,14 +1,15 @@
-import subprocess
 from pathlib import Path
-import os
+from merge_to_pdf import *
+from compress_pdf import *
+from ocr_pdf import *
+import asyncio
 
 # Merge, compress, and add OCR all at once.
 def merge_compress_ocr():
-    subprocess.run(["cmd.exe", "/c", "python", "merge_to_pdf.py"])
-    subprocess.run(["cmd.exe", "/c", "python", "compress_pdf.py"])
-    subprocess.run(["cmd.exe", "/c", "python", "ocr_pdf.py"])
-    os.startfile("OCRProcessedPDFs")
-
+    # Make and process PDFs.
+    merge_to_pdf_all()
+    compress_with_ghostscript()
+    ocr_pdf_all()
 
 # Remove the existing files inside of a designated folder.
 def clear_folder(filepath):

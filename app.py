@@ -1,13 +1,13 @@
 import streamlit as st
-from full_execute import *
 import os
+from full_execute import *
+from merge_to_pdf import *
+from compress_pdf import *
+from ocr_pdf import *
+import time
+import asyncio
 
 PATH_TO_CSS = "./app_style.css"
-folders_to_merge = "./FoldersForMerging/"
-
-# For obtaining the filepath in other files.
-def get_folders_to_merge_filepath():
-    return folders_to_merge
 
 # For loading CSS into the app.
 def load_css(filepath):
@@ -52,5 +52,29 @@ st.html("""
             <li> Once complete, the folder with OCR-processed PDFs will open automatically.</li>
         </el>
 """)
-st.button(label="Step 2: Generate PDFs!", key="generate_button", on_click=merge_compress_ocr)
+if st.button(label="Step 2: Generate PDFs!", key="generate_button"):
+    # Process each step with a loading prompt
+    with st.spinner("Generating PDF Files..."):
+        merge_to_pdf_all()
+        st.success("Finished PDF Generation.")
+    with st.spinner("Compressing PDF Files..."):
+        compress_with_ghostscript()
+        st.success("Finished PDF Compression")
+    with st.spinner("Adding OCR to PDF Files..."):
+        ocr_pdf_all()
+        st.success("Finished OCR Scanning.")
+    
+
+# Cache Clearing
+st.html("""
+        <h2> 
+        Press the button below to wipe the cache of stored PDFs (You will need
+        to regenerate any PDFs unintentionally lost in this process):
+        </h2>
+""")
+st.button(
+    label="Clear Cache", 
+    key="cache_delete_button", 
+    on_click=clear_all_pdf_folders
+)
 
