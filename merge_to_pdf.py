@@ -1,6 +1,7 @@
 from PIL import Image 
 import os
 import regex
+import streamlit as st
 
 PATH_TO_FOLDERS = "./FoldersForMerging/"
 PATH_TO_MERGED_PDFS = "./MergedPDFs/" # Output folder
@@ -34,7 +35,20 @@ def merge_to_pdf(filepath, filename):
 
 # Make a merged PDF for each desired folder.
 def merge_to_pdf_all():
+    # Initialize progress bar.
+    st.session_state["merge_progress"] = 0
+    merge_prog_bar  = st.progress(
+        st.session_state["merge_progress"], 
+        f"Generating PDFs... ({st.session_state.merge_progress} of {len(folder_paths)} complete)"
+    )
+
     for folder_ind in range(len(folder_paths)):
         # Create PDF of merged images
         merge_to_pdf(folder_paths[folder_ind], folder_names[folder_ind])
+        # Update progress bar using session state variable.
+        st.session_state["merge_progress"] += 1
+        merge_prog_bar.progress(
+            st.session_state["merge_progress"] / len(folder_paths), 
+            f"Generating PDFs... ({st.session_state.merge_progress} of {len(folder_paths)} complete)"
+        )
     return 0

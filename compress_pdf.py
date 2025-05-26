@@ -1,6 +1,7 @@
 import subprocess
 import os
 import ghostscript
+import streamlit as st
 
 PATH_TO_MERGED_PDFS = "./MergedPDFs/"
 PATH_TO_OUTPUT = "./CompressedPDFs/"
@@ -40,9 +41,20 @@ def compress_with_ghostscript():
         # Compress with ghostscript.
         ghostscript.Ghostscript(*args)
     
+    #Initialize progress bar.
+    st.session_state["compression_progress"] = 0
+    compress_prog_bar  = st.progress(
+        st.session_state["compression_progress"], 
+        f"Compressing PDFs... ({st.session_state.compression_progress} of {len(pdfs_to_compress)} complete)"
+    )
 
     for pdf_num in range(len(pdfs_to_compress)):
         # Compress PDF
         compress_single_pdf(pdf_num)
-    
+        # Update progress bar.
+        st.session_state["compression_progress"] += 1
+        compress_prog_bar.progress(
+            st.session_state["compression_progress"] / len(pdfs_to_compress), 
+            f"Compressing PDFs... ({st.session_state.compression_progress} of {len(pdfs_to_compress)} complete)"
+        )
     return 0

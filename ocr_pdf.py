@@ -1,6 +1,7 @@
 import subprocess
 import stat
 import os
+import streamlit as st
 
 # Set filepaths for pdfs to grab and where to send them.
 PATH_TO_ORIGINAL_PDFs = "./MergedPDFs/"
@@ -21,6 +22,13 @@ original_pdf_names = [file for file in os.listdir(PATH_TO_ORIGINAL_PDFs)]
 
 # Run OCR software on PDF files.
 def ocr_pdf_all():
+    # Initialize progress bar.
+    st.session_state["ocr_progress"] = 0
+    ocr_prog_bar  = st.progress(
+        st.session_state["ocr_progress"], 
+        f"Adding OCR to PDFs... ({st.session_state.ocr_progress} of {len(pdfs_to_compress)} complete)"
+    )
+
     for ind in range(len(pdfs_to_compress)):
         # Run OCR
         subprocess.run([
@@ -30,6 +38,12 @@ def ocr_pdf_all():
             f"{PATH_TO_COMPRESSED_PDFS}{pdfs_to_compress[ind]}",     # Input file
             f"{PATH_TO_PROCESSED_PDFS}{original_pdf_names[ind]}"     # Output file
         ])
+        # Update progress bar.
+        st.session_state["ocr_progress"] += 1
+        ocr_prog_bar.progress(
+            st.session_state["ocr_progress"] / len(pdfs_to_compress),
+            f"Adding OCR to PDFs... ({st.session_state.ocr_progress} of {len(pdfs_to_compress)} complete)"
+        )
 
     # Open folder with finalized PDFs once finished.
     os.startfile("OCRProcessedPDFs")

@@ -2,7 +2,6 @@ from pathlib import Path
 from merge_to_pdf import *
 from compress_pdf import *
 from ocr_pdf import *
-import asyncio
 
 # Merge, compress, and add OCR all at once.
 def merge_compress_ocr():

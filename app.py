@@ -4,8 +4,6 @@ from full_execute import *
 from merge_to_pdf import *
 from compress_pdf import *
 from ocr_pdf import *
-import time
-import asyncio
 
 PATH_TO_CSS = "./app_style.css"
 
@@ -30,6 +28,7 @@ st.html("""
         </ul>  
 """)
 
+
 # STEP 1
 st.html("""
         <h2> 
@@ -40,6 +39,7 @@ st.html("""
 def open_merge_folder():
     os.startfile("FoldersForMerging")
 st.button(label="Step 1: Click me!", key="merge_folder_button", on_click=open_merge_folder)
+
 
 # STEP 2
 st.html("""
@@ -52,17 +52,19 @@ st.html("""
             <li> Once complete, the folder with OCR-processed PDFs will open automatically.</li>
         </el>
 """)
+
+# Initialize session state variables.
+if "merge_progress" not in st.session_state:
+    st.session_state["merge_progress"] = 0
+if "compression_progress" not in st.session_state:
+    st.session_state["compression_progress"] = 0
+if "ocr_progress" not in st.session_state:
+    st.session_state["ocr_progress"] = 0
+
+# Button to generate PDFs.
 if st.button(label="Step 2: Generate PDFs!", key="generate_button"):
     # Process each step with a loading prompt
-    with st.spinner("Generating PDF Files..."):
-        merge_to_pdf_all()
-        st.success("Finished PDF Generation.")
-    with st.spinner("Compressing PDF Files..."):
-        compress_with_ghostscript()
-        st.success("Finished PDF Compression")
-    with st.spinner("Adding OCR to PDF Files..."):
-        ocr_pdf_all()
-        st.success("Finished OCR Scanning.")
+    merge_compress_ocr()
     
 
 # Cache Clearing
