@@ -12,10 +12,22 @@ def merge_compress_ocr():
 
 # Remove the existing files inside of a designated folder.
 def clear_folder(filepath):
+    # Clear folder contents
     p = Path(filepath)
     filenames = [name for name in p.iterdir()]
     for filename in filenames:
         Path.unlink(filename)
+    
+    # Create gitignore so folder contents aren't recognized
+    # and so folder is still recognized by origin.
+    gitignore_text = """ 
+    # Ignore everything in this directory
+    *
+    # Except this file
+    !.gitignore
+    """
+    ignore_file = Path(filepath + "/.gitignore")
+    ignore_file.write_text(gitignore_text)
 
 # Functions for cleaning out certain folders.
 def clear_merged_pdfs_folder():
