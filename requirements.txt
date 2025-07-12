@@ -1,0 +1,4 @@
+ghostscript==0.7
+Pillow==11.3.0
+regex==2024.9.11
+streamlit==1.45.1
