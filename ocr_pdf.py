@@ -22,12 +22,12 @@ original_pdf_names = [file for file in os.listdir(PATH_TO_ORIGINAL_PDFs)]
 
 # Run OCR software on PDF files.
 def ocr_pdf_all():
-    # Initialize progress bar.
-    st.session_state["ocr_progress"] = 0
-    ocr_prog_bar  = st.progress(
-        st.session_state["ocr_progress"], 
-        f"Adding OCR to PDFs... ({st.session_state.ocr_progress} of {len(pdfs_to_ocr)} complete)"
-    )
+    # # Initialize progress bar.
+    # st.session_state["ocr_progress"] = 0
+    # ocr_prog_bar  = st.progress(
+    #     st.session_state["ocr_progress"], 
+    #     f"Adding OCR to PDFs... ({st.session_state.ocr_progress} of {len(pdfs_to_ocr)} complete)"
+    # )
 
     for ind in range(len(pdfs_to_ocr)):
         # Run OCR
@@ -38,12 +38,12 @@ def ocr_pdf_all():
             f"{PATH_TO_COMPRESSED_PDFS}{pdfs_to_ocr[ind]}",     # Input file
             f"{PATH_TO_PROCESSED_PDFS}{original_pdf_names[ind]}"     # Output file
         ])
-        # Update progress bar.
-        st.session_state["ocr_progress"] += 1
-        ocr_prog_bar.progress(
-            st.session_state["ocr_progress"] / len(pdfs_to_ocr),
-            f"Adding OCR to PDFs... ({st.session_state.ocr_progress} of {len(pdfs_to_ocr)} complete) - This step while take a while."
-        )
+        # # Update progress bar.
+        # st.session_state["ocr_progress"] += 1
+        # ocr_prog_bar.progress(
+        #     st.session_state["ocr_progress"] / len(pdfs_to_ocr),
+        #     f"Adding OCR to PDFs... ({st.session_state.ocr_progress} of {len(pdfs_to_ocr)} complete) - This step while take a while."
+        # )
 
     # Open folder with finalized PDFs once finished.
     os.startfile("OCRProcessedPDFs")
