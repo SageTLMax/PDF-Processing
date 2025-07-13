@@ -2,10 +2,10 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtCore import Qt
 from pathlib import Path
 
-from merge_to_pdf import merge_to_pdf_all
-from compress_pdf import compress_with_ghostscript
-from ocr_pdf import ocr_pdf_all
-from full_execute import clear_all_pdf_folders
+from merge_to_pdf import merge_to_pdf
+from compress_pdf import compress_single_pdf_gs
+from ocr_pdf import ocr_pdf
+from clean_folders import clear_all_pdf_folders
 
 import sys # Only needed for access to command line arguments
 
@@ -44,6 +44,7 @@ class MainWindow(QMainWindow):
         self.widgets["Home"].append(app_desc_text)
         # Style the text.
         self.apply_font_settings(app_desc_text, 's')
+
 
         # Introduce Step 1 (choose folders to process).
         step_1_title = QLabel("STEP 1: Choose Folders to Process!")
@@ -143,16 +144,17 @@ class MainWindow(QMainWindow):
         window_title = "Choose Parent Folder:"
         parent_directory = QFileDialog.getExistingDirectory(self, window_title, "")
 
-        # Store the parent folder.
+        # Store the chosen parent folder.
         self.parent_folder = str(parent_directory)
-        # Store the subdirectories.
+        # Store the subdirectories as a dictionary of foldername : folderpath pairs.
         parent_path = Path(self.parent_folder)
-        self.folders_to_merge = [
-            str(name) for name in parent_path.iterdir() if name.is_dir()
-        ]
+        self.folders_to_merge = {
+            str(filepath).split("\\")[-1] : str(filepath) 
+                for filepath in parent_path.iterdir() if filepath.is_dir()
+        }
 
         # Show what user has chosen as a QLabel.
-        bullets = ["<li>" + folder.split("\\")[-1] + "</li>" for folder in self.folders_to_merge]
+        bullets = ["<li>" + foldername + "</li>" for foldername in self.folders_to_merge.keys()]
         self.parent_folder_conf.setText(f"""<html>
             <p>Choosing all folders in {self.parent_folder.split("/")[-1]}:<p>
             <ul>
@@ -163,9 +165,15 @@ class MainWindow(QMainWindow):
 
     # Process chosen PDFs upon click.
     def step_2_button_click(self):
-        merge_to_pdf_all(self.folders_to_merge)
-        compress_with_ghostscript()
-        ocr_pdf_all(self.folders_to_merge)
+        # Generate PDF of merged images.
+        for foldername, folderpath in self.folders_to_merge.items():
+            merge_to_pdf(folderpath, foldername)
+        # Compress each PDF.
+        for foldername in self.folders_to_merge.keys():
+            compress_single_pdf_gs(foldername)
+        # Apply OCR to each PDF.
+        for foldername in self.folders_to_merge.keys():
+            ocr_pdf(foldername)
 
         
     # Clear cahced files upon click.

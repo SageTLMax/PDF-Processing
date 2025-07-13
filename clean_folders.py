@@ -1,14 +1,4 @@
 from pathlib import Path
-from merge_to_pdf import *
-from compress_pdf import *
-from ocr_pdf import *
-
-# Merge, compress, and add OCR all at once.
-def merge_compress_ocr():
-    # Make and process PDFs.
-    merge_to_pdf_all()
-    compress_with_ghostscript()
-    ocr_pdf_all()
 
 # Remove the existing files inside of a designated folder.
 def clear_folder(filepath):
