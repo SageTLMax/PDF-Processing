@@ -1,10 +1,8 @@
 import subprocess
 import stat
 import os
-import streamlit as st
 
 # Set filepaths for pdfs to grab and where to send them.
-PATH_TO_ORIGINAL_PDFs = "./MergedPDFs/"
 PATH_TO_COMPRESSED_PDFS = "./CompressedPDFs/"
 PATH_TO_PROCESSED_PDFS = "./OCRProcessedPDFs/" # Output folder
 
@@ -12,16 +10,17 @@ is_finished = False
 def is_ocr_finished():
     return is_finished
 
-# Get file names of PDF files and set write permissions.
-pdfs_to_ocr = []
-for file_name in os.listdir(PATH_TO_COMPRESSED_PDFS):
-    os.chmod(PATH_TO_COMPRESSED_PDFS + file_name, stat.S_IWRITE)
-    pdfs_to_ocr.append(file_name)
-
-original_pdf_names = [file for file in os.listdir(PATH_TO_ORIGINAL_PDFs)]
-
 # Run OCR software on PDF files.
-def ocr_pdf_all():
+def ocr_pdf_all(folders_to_merge):
+# Get file names of PDF files and set write permissions.
+    pdfs_to_ocr = []
+    for file_name in os.listdir(PATH_TO_COMPRESSED_PDFS):
+        if file_name != ".gitignore":
+            os.chmod(PATH_TO_COMPRESSED_PDFS + file_name, stat.S_IWRITE)
+            pdfs_to_ocr.append(file_name)
+
+    pdf_names = [name.split("\\")[-1] + ".pdf" for name in folders_to_merge]
+
     # # Initialize progress bar.
     # st.session_state["ocr_progress"] = 0
     # ocr_prog_bar  = st.progress(
@@ -36,7 +35,7 @@ def ocr_pdf_all():
             "/c", 
             "ocrmypdf", 
             f"{PATH_TO_COMPRESSED_PDFS}{pdfs_to_ocr[ind]}",     # Input file
-            f"{PATH_TO_PROCESSED_PDFS}{original_pdf_names[ind]}"     # Output file
+            f"{PATH_TO_PROCESSED_PDFS}{pdf_names[ind]}"     # Output file
         ])
         # # Update progress bar.
         # st.session_state["ocr_progress"] += 1

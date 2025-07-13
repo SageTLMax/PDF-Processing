@@ -20,7 +20,7 @@ def compress_with_pdfsizeopt():
 # Compression method #2 (better).
 def compress_with_ghostscript():
     # Path names for PDFs to compress.
-    pdfs_to_compress = [PATH_TO_MERGED_PDFS + f for f in os.listdir(PATH_TO_MERGED_PDFS)]
+    pdfs_to_compress = [PATH_TO_MERGED_PDFS + f for f in os.listdir(PATH_TO_MERGED_PDFS) if f != ".gitignore"]
 
     def compress_single_pdf(index):
         # Settings for Ghostscript compression.
