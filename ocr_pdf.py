@@ -1,17 +1,16 @@
 import subprocess
 
-# Set filepaths for pdfs to grab and where to send them.
+# Set filepaths for pdfs to grab.
 PATH_TO_COMPRESSED_PDFS = "./CompressedPDFs/"
-PATH_TO_PROCESSED_PDFS = "./OCRProcessedPDFs/" # Output folder
 
 # Apply OCR to a single pdf file from the CompressedPDFs folder
-def ocr_pdf(pdfname):
+def ocr_pdf(pdfname, save_location):
     # Run OCR
     subprocess.run([
         "cmd.exe", 
         "/c", 
         "ocrmypdf", 
         f"{PATH_TO_COMPRESSED_PDFS}{pdfname}.pdf",     # Input file
-        f"{PATH_TO_PROCESSED_PDFS}{pdfname}.pdf"     # Output file
+        f"{save_location}/{pdfname}.pdf"               # Output file
     ])
 

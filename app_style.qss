@@ -1,0 +1,100 @@
+QLabel,
+QPushButton,
+QTabWidget {
+  font-size: 18px;
+  color: #253042;
+}
+
+QTabWidget {
+  background-color: ghostwhite;
+  min-width: 42em;
+  max-width: 42em;
+  min-height: 25em;
+  max-height: 25em;
+}
+
+QLabel {
+  margin-left: 1em;
+  padding-left: 1em;
+}
+
+QLabel#title {
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+  padding-left: 0.75em;
+  margin-left: 0;
+}
+
+QLabel#appdesc {
+  padding-left: 11em;
+}
+
+QLabel#header {
+  font-size: 24px;
+  font-weight: bold;
+  padding-left: 0p;
+  margin-right: 1em;
+  margin-top: 1em;
+  max-height: 2em;
+  vertical-align: top;
+}
+
+QLabel#step1desc {
+  max-height: 2em;
+}
+
+QLabel#parentconf {
+  max-height: 15em;
+}
+
+QLabel#step2desc {
+  max-height: 4em;
+}
+
+QLabel#savelocation {
+  max-height: 2em;
+  font-weight: bold;
+}
+
+QWidget#page {
+  background-color: ghostwhite;
+}
+
+QPushButton {
+  background-color: white;
+  border-width: 2px;
+  border-radius: 6px;
+  border-style: groove;
+  border-color: gray;
+  max-width: 325px;
+  margin-left: 12em;
+  padding: 2px;
+}
+
+QPushButton:hover {
+  background-color: #f0f7f6;
+}
+
+QPushButton:pressed {
+  background-color: #daf2ee;
+}
+
+QPushButton#step2button {
+  margin-bottom: 9em;
+}
+
+QPushButton#cachebutton {
+  background-color: lightcoral;
+  color: rgb(247, 241, 241);
+  border-color: rgb(156, 156, 156);
+  margin-bottom: 13em;
+}
+
+QPushButton#cachebutton:hover {
+  background-color: rgb(234, 105, 105);
+}
+
+QPushButton#cachebutton:pressed {
+  background-color: rgb(235, 75, 75);
+}
