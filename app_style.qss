@@ -80,6 +80,10 @@ QPushButton:pressed {
   background-color: #daf2ee;
 }
 
+QPushButton:disabled {
+  background-color: #a7a7a7;
+}
+
 QPushButton#step2button {
   margin-bottom: 9em;
 }

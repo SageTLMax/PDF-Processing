@@ -20,7 +20,8 @@ class MainWindow(QMainWindow):
             "Done": [],
         }
         self.parent_folder = ""
-        self.save_location = "None"
+        self.save_location = "None (Please use the button below)"
+        self.has_save_location = self.save_location != "None (Please use the button below)"
         self.folders_to_merge = []
 
 
@@ -97,11 +98,12 @@ class MainWindow(QMainWindow):
         save_location_button.clicked.connect(self.save_button_click)
 
         # Step 2 Button
-        step_2_button = QPushButton("Step 2: Make PDFs!")
-        step_2_button.setObjectName("step2button")
-        self.widgets["Step 2"].append(step_2_button)
+        self.step_2_button = QPushButton("Step 2: Make PDFs!")
+        self.step_2_button.setObjectName("step2button")
+        self.widgets["Step 2"].append(self.step_2_button)
         # Add button functionality.
-        step_2_button.clicked.connect(self.step_2_button_click)
+        self.step_2_button.setEnabled(self.has_save_location)
+        self.step_2_button.clicked.connect(self.step_2_button_click)
 
 
         # Done page header
@@ -168,6 +170,8 @@ class MainWindow(QMainWindow):
             str(filepath).split("\\")[-1] : str(filepath) 
                 for filepath in parent_path.iterdir() if filepath.is_dir()
         }
+        if(self.has_save_location):
+            self.step_2_button.setEnabled(True)
 
         # Show what user has chosen as a QLabel.
         bullets = ["<li>" + foldername + "</li>" for foldername in self.folders_to_merge.keys()]
@@ -183,6 +187,9 @@ class MainWindow(QMainWindow):
         window_title = "Choose Where to Save PDFs:"
         self.save_location = QFileDialog.getExistingDirectory(self, window_title, "").split("/")[-1]
         self.save_location_text.setText(f"Current save location: {self.save_location}")
+        self.has_save_location = True
+        if(self.parent_folder != ""):
+            self.step_2_button.setEnabled(True)
 
     # Process chosen PDFs upon click.
     def step_2_button_click(self):
