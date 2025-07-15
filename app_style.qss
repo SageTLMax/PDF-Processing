@@ -85,7 +85,13 @@ QPushButton:disabled {
 }
 
 QPushButton#step2button {
-  margin-bottom: 3em;
+  margin-bottom: 1em;
+}
+
+QProgressBar {
+  margin-left: 50px;
+  min-height: 50px;
+  max-height: 50px;
 }
 
 QPushButton#cachebutton {

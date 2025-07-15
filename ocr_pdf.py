@@ -13,4 +13,3 @@ def ocr_pdf(pdfname, save_location):
         f"{PATH_TO_COMPRESSED_PDFS}{pdfname}.pdf",     # Input file
         f"{save_location}/{pdfname}.pdf"               # Output file
     ])
-

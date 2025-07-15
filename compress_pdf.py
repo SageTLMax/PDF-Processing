@@ -18,7 +18,7 @@ def compress_with_pdfsizeopt():
 
 
 # Compression method #2 (better).
-def compress_single_pdf_gs(foldername):
+def compress_single_pdf_gs(foldername, folderpath):
     # Settings for Ghostscript compression.
     args = [
         "-q",
@@ -36,3 +36,5 @@ def compress_single_pdf_gs(foldername):
 
     # Compress with ghostscript.
     ghostscript.Ghostscript(*args)
+
+    return 0
