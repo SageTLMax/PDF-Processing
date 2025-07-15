@@ -29,41 +29,44 @@ class JobRunner(QRunnable):
         self.progress = 0
         self.signals = WorkerSignals()
 
-    @pyqtSlot()
-    def run(self):
-        category_to_pdf_func = {
+        # For obtaining data based on processing category.
+        self.category_to_pdf_func = {
             "merge": merge_to_pdf,
             "compress": compress_single_pdf_gs,
             "ocr": ocr_pdf
         }
 
-        update_signals = {
+        self.update_signals = {
             "merge": self.signals.merge_progress,
             "compress": self.signals.compress_progress,
             "ocr": self.signals.ocr_progress,
         }
 
-        finish_signals = {
+        self.finish_signals = {
             "merge": self.signals.merge_finished,
             "compress": self.signals.compress_finished,
             "ocr": self.signals.ocr_finished,
         }
 
+    @pyqtSlot()
+    def run(self):
         # Go through each file.
         for name, path in self.folders.items():
-            print(self.category)
-            # Process PDF.
-            if self.category != "ocr":
-                category_to_pdf_func[self.category](name, path)
-            else:
-                print(self.save_path)
-                category_to_pdf_func[self.category](name, self.save_path)
-            # Update progress and emit signal to change progress bar.
-            self.progress += 1
-            update_signals[self.category].emit(self.progress)
+            self.process_pdf(name, path)
 
-        # If final file, emit finished signal.
-        finish_signals[self.category].emit(True)
+        # If done with all files, emit finished signal.
+        self.finish_signals[self.category].emit(True)
+
+    # Process a single PDF file.
+    def process_pdf(self, name, path):
+        # Apply processing function depending on category.
+        if self.category == "ocr":
+            self.category_to_pdf_func[self.category](name, self.save_path) 
+        else:
+            self.category_to_pdf_func[self.category](name, path)
+        # Update progress and emit signal to change progress bar.
+        self.progress += 1
+        self.update_signals[self.category].emit(self.progress)
 
 
 class MainWindow(QMainWindow):
@@ -225,21 +228,12 @@ class MainWindow(QMainWindow):
         window_title = "Choose Parent Folder:"
         parent_directory = QFileDialog.getExistingDirectory(self, window_title, "")
 
-        # Store the chosen parent folder.
-        self.parent_folder = str(parent_directory)
-        # Store the subdirectories as a dictionary of foldername : folderpath pairs.
-        parent_path = Path(self.parent_folder)
-        self.folders_to_merge = {
-            str(filepath).split("\\")[-1] : str(filepath) 
-                for filepath in parent_path.iterdir() if filepath.is_dir()
-        }
+        # Set self.parent_folder and self.folders_to_merge
+        self.save_processing_folders_and_parent(parent_directory)
+
         # Step 2 button enabling/disabling
-        if(self.has_save_location):
-            self.step_2_button.setEnabled(True)
-        # Update progressbar variables.
-        self.merge_progressbar.setRange(0, len(self.folders_to_merge))
-        self.compress_progressbar.setRange(0, len(self.folders_to_merge))
-        self.ocr_progressbar.setRange(0, len(self.folders_to_merge))
+        self.check_can_process()
+
         # Show what user has chosen as a QLabel.
         bullets = ["<li>" + foldername + "</li>" for foldername in self.folders_to_merge.keys()]
         self.parent_folder_conf.setText(f"""<html>
@@ -256,35 +250,33 @@ class MainWindow(QMainWindow):
         self.save_path = QFileDialog.getExistingDirectory(self, window_title, "")
         self.save_location = self.save_path.split("/")[-1]
         self.save_location_text.setText(f"Current save location: {self.save_location}")
+        
         # Step 2 button enabling/disabling
         self.has_save_location = True
-        if(self.parent_folder != ""):
-            self.step_2_button.setEnabled(True)
+        self.check_can_process()
 
     # Process chosen PDFs upon click.
     def step_2_button_click(self):
         # Thread runner
         self.threadpool = QThreadPool()
+
         # Create runner for PDF merging.
         self.mergeRunner = JobRunner(self.folders_to_merge, "merge", self.save_path)
-        self.mergeRunner.signals.merge_progress.connect(
-            self.update_func(self.merge_progressbar, self.merge_progresslabel, self.merge_msg)
-        )
+        self.mergeRunner.signals.merge_progress.connect(self.update_func("merge"))
         self.mergeRunner.signals.merge_finished.connect(lambda _: self.threadpool.start(self.compressRunner))
         # Create runner for PDF compression.
         self.compressRunner = JobRunner(self.folders_to_merge, "compress", self.save_path)
-        self.compressRunner.signals.compress_progress.connect(
-            self.update_func(self.compress_progressbar, self.compress_progresslabel, self.compress_msg)
-        )
+        self.compressRunner.signals.compress_progress.connect(self.update_func("compress"))
         self.compressRunner.signals.compress_finished.connect(lambda _: self.threadpool.start(self.ocrRunner))
         # Create runner for PDF OCR Scanninng.
         self.ocrRunner = JobRunner(self.folders_to_merge, "ocr", self.save_path)
-        self.ocrRunner.signals.ocr_progress.connect(
-            self.update_func(self.ocr_progressbar, self.ocr_progresslabel, self.ocr_msg)
-        )
-        self.make_label(self.merge_progresslabel, self.merge_msg, 0)
-        self.make_label(self.compress_progresslabel, self.compress_msg, 0)
-        self.make_label(self.ocr_progresslabel, self.ocr_msg, 0)
+        self.ocrRunner.signals.ocr_progress.connect(self.update_func("ocr"))
+        self.ocrRunner.signals.ocr_finished.connect(lambda _: print("OCR Finished."))
+
+        # Setup progressbar ranges and labels.
+        self.setup_progress_bars()
+
+        # Start running threads.
         self.threadpool.start(self.mergeRunner)
 
         
@@ -292,7 +284,27 @@ class MainWindow(QMainWindow):
     def cache_button_click(self):
         clear_all_pdf_folders()
 
-    
+
+    def save_processing_folders_and_parent(self, parent_directory):
+        # Store the chosen parent folder.
+        self.parent_folder = str(parent_directory)
+        # Store the subdirectories as a dictionary of foldername : folderpath pairs.
+        parent_path = Path(self.parent_folder)
+        self.folders_to_merge = {
+            str(filepath).split("\\")[-1] : str(filepath) 
+                for filepath in parent_path.iterdir() if filepath.is_dir()
+        }
+
+
+    # Enable/Disable Step 2 button depending on if there is a valid save location
+    # and that there's actual folders to process.
+    def check_can_process(self):
+        if(self.has_save_location and len(self.folders_to_merge) > 0):
+            self.step_2_button.setEnabled(True)
+        else:
+            self.step_2_button.setEnabled(False)
+
+
     # Create the page layout for a given category ("home, step1, step2")
     def create_page_layout(self, category):
         main_layout = QVBoxLayout()
@@ -301,6 +313,7 @@ class MainWindow(QMainWindow):
         return main_layout
     
 
+    # Create the page for a given category and apply layout.
     def create_page(self, category):
         home_page = QWidget()
         home_page.setObjectName("page")
@@ -308,17 +321,47 @@ class MainWindow(QMainWindow):
         return home_page
 
     
+    # Set the label for a progress bar.
     def make_label(self, label, message, value):
         label.setText(f"{message} ({value} of {len(self.folders_to_merge)} completed)")
 
 
     # Returns a function for updating a progress bar to use with signals
-    def update_func(self, bar, label, message):
+    def make_update_func(self, bar, label, message):
         # Function to activate upon receiving a signal.
         def update_progress_bar(value):
             bar.setValue(value)
             self.make_label(label, message, value)
         return update_progress_bar
+
+
+    # Returns the function to update progress bar depending on category.
+    def update_func(self, category):
+        category_to_update_func = {
+            "merge": self.make_update_func(
+                    self.merge_progressbar, self.merge_progresslabel, self.merge_msg
+                ),
+            "compress": self.make_update_func(
+                    self.compress_progressbar, self.compress_progresslabel, self.compress_msg
+                ),
+            "ocr": self.make_update_func(
+                    self.ocr_progressbar, self.ocr_progresslabel, self.ocr_msg
+                ),
+        }
+        return category_to_update_func[category]
+
+
+    # Setup progressbar range and labels.
+    def setup_progress_bars(self):
+        # Update progressbar variables so they have valid range.
+        self.merge_progressbar.setRange(0, len(self.folders_to_merge))
+        self.compress_progressbar.setRange(0, len(self.folders_to_merge))
+        self.ocr_progressbar.setRange(0, len(self.folders_to_merge))
+
+        # Setup the labels for the progress bars.
+        self.make_label(self.merge_progresslabel, self.merge_msg, 0)
+        self.make_label(self.compress_progresslabel, self.compress_msg, 0)
+        self.make_label(self.ocr_progresslabel, self.ocr_msg, 0)
 
 
 # You need one (and only one) QApplication instance per application.
