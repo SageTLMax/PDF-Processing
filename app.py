@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import *
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QRunnable, pyqtSignal, pyqtSlot, QObject, QThreadPool
 from pathlib import Path
 
 from merge_to_pdf import merge_to_pdf
@@ -8,6 +8,27 @@ from ocr_pdf import ocr_pdf
 from clean_folders import clear_all_pdf_folders
 
 import sys # Only needed for access to command line arguments
+
+
+class WorkerSignals(QObject):
+    update_progress = pyqtSignal(int)
+
+class JobRunner(QRunnable):
+    def __init__(self, folders_for_merging, pdf_func):
+        super().__init__()
+
+        self.folders = folders_for_merging
+        self.pdf_func = pdf_func
+        self.progress = 0
+        self.signals = WorkerSignals()
+
+    @pyqtSlot()
+    def run(self):
+        for name, path in self.folders.items():
+            self.pdf_func(name, path)
+            self.progress += 1
+            self.signals.update_progress.emit(self.progress)
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -105,6 +126,12 @@ class MainWindow(QMainWindow):
         self.step_2_button.setEnabled(self.has_save_location)
         self.step_2_button.clicked.connect(self.step_2_button_click)
 
+        # Merge Progress Bar
+        self.merge_progresslabel = QLabel("")
+        self.merge_progressbar = QProgressBar()
+        self.widgets["Step 2"].append(self.merge_progresslabel)
+        self.widgets["Step 2"].append(self.merge_progressbar)
+        
 
         # Done page header
         done_header = QLabel("All of your PDFs are done!")
@@ -170,9 +197,11 @@ class MainWindow(QMainWindow):
             str(filepath).split("\\")[-1] : str(filepath) 
                 for filepath in parent_path.iterdir() if filepath.is_dir()
         }
+        # Step 2 button enabling/disabling
         if(self.has_save_location):
             self.step_2_button.setEnabled(True)
-
+        # Update progressbar variables.
+        self.merge_progressbar.setRange(0, len(self.folders_to_merge))
         # Show what user has chosen as a QLabel.
         bullets = ["<li>" + foldername + "</li>" for foldername in self.folders_to_merge.keys()]
         self.parent_folder_conf.setText(f"""<html>
@@ -184,24 +213,24 @@ class MainWindow(QMainWindow):
         
 
     def save_button_click(self):
+        # Choose folder for saving PDFs
         window_title = "Choose Where to Save PDFs:"
         self.save_location = QFileDialog.getExistingDirectory(self, window_title, "").split("/")[-1]
         self.save_location_text.setText(f"Current save location: {self.save_location}")
+        # Step 2 button enabling/disabling
         self.has_save_location = True
         if(self.parent_folder != ""):
             self.step_2_button.setEnabled(True)
 
     # Process chosen PDFs upon click.
     def step_2_button_click(self):
-        # Generate PDF of merged images.
-        for foldername, folderpath in self.folders_to_merge.items():
-            merge_to_pdf(folderpath, foldername)
-        # Compress each PDF.
-        for foldername in self.folders_to_merge.keys():
-            compress_single_pdf_gs(foldername)
-        # Apply OCR to each PDF.
-        for foldername in self.folders_to_merge.keys():
-            ocr_pdf(foldername, self.save_location)
+        # Thread runner
+        self.threadpool = QThreadPool()
+        # Create runner for PDF merging.
+        self.mergeRunner = JobRunner(self.folders_to_merge, merge_to_pdf)
+        self.mergeRunner.signals.update_progress.connect(self.update_progressbar)
+        self.make_label(self.merge_progresslabel, "Generating PDF...", 0)
+        self.threadpool.start(self.mergeRunner)
 
         
     # Clear cahced files upon click.
@@ -215,6 +244,16 @@ class MainWindow(QMainWindow):
         for widget in self.widgets[category]:
             main_layout.addWidget(widget)
         return main_layout
+    
+
+    def make_label(self, label, message, value):
+        label.setText(f"{message} ({value} of {len(self.folders_to_merge)} completed)")
+
+
+    def update_progressbar(self, value):
+        self.merge_progressbar.setValue(value)
+        self.make_label(self.merge_progresslabel, "Generating PDF...", value)
+        print(f"Current Progress: {self.merge_progressbar.value()}")
 
 
 # You need one (and only one) QApplication instance per application.

@@ -85,7 +85,7 @@ QPushButton:disabled {
 }
 
 QPushButton#step2button {
-  margin-bottom: 9em;
+  margin-bottom: 3em;
 }
 
 QPushButton#cachebutton {

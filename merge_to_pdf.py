@@ -7,7 +7,7 @@ PATH_TO_MERGED_PDFS = "./MergedPDFs/" # Output folder
 # Regex used to check if file is an image.
 IS_IMAGE_REGEX = "^\.pdf|\.jpg|\.jpeg|\.tif|\.png$"
 
-def merge_to_pdf(filepath, pdfname):
+def merge_to_pdf(pdfname, filepath):
     """
     Takes the images within the folder designated by filepath and compiles them
     into a signle PDF file named filename.
