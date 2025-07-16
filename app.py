@@ -200,8 +200,14 @@ class MainWindow(QMainWindow):
 
         # Done page description
         self.done_desc = QLabel("")
-        self.done_desc.setObjectName("step2desc")
+        self.done_desc.setObjectName("step1desc")
         self.widgets["Done"].append(self.done_desc)
+
+        # Save location reminder:
+        self.save_reminder = QLineEdit()
+        self.save_reminder.setReadOnly(True)
+        self.widgets["Done"].append(self.save_reminder)
+        self.save_reminder.setVisible(False)
 
         # Cache clear header
         cache_header = QLabel("Options (Clear Cache):")
@@ -437,10 +443,9 @@ class MainWindow(QMainWindow):
         # Update Done Page header.
         self.done_header.setText("All of your PDFs are done!")
         # Update save location reminder.
-        self.done_desc.setText(f"""<html>
-                <p>The OCR-processed PDFs are complete. You saved the PDFs at:</p>
-                <p>{self.save_path}</p>
-            </html>""")
+        self.done_desc.setText("The OCR-processed PDFs are complete. You saved the PDFs at:")
+        self.save_reminder.setVisible(True)
+        self.save_reminder.setText(f"{self.save_path}")
         # Navigate to Done page.
         self.pages.setCurrentIndex(3)
 

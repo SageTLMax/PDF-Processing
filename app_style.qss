@@ -66,6 +66,18 @@ QLabel#savelocation {
   font-weight: bold;
 }
 
+QLineEdit {
+  font-size: 18px;
+  background-color: white;
+  color: #253042;
+  min-height: 1.2em;
+  max-height: 1.2em;
+  margin-left: 1em;
+  margin-right: 1em;
+  padding-left: 1em;
+  padding-right: 1em;
+}
+
 QWidget#page {
   background-color: ghostwhite;
 }
