@@ -88,6 +88,7 @@ class MainWindow(QMainWindow):
         self.merge_msg = "Generating PDFs..."
         self.compress_msg = "Compressing PDFs..."
         self.ocr_msg = "Applying OCR to PDFs..."
+        self.start_of_processing = True
 
 
         # Initialize title text
@@ -175,24 +176,42 @@ class MainWindow(QMainWindow):
         self.merge_progressbar = QProgressBar()
         self.widgets["Step 2"].append(self.merge_progresslabel)
         self.widgets["Step 2"].append(self.merge_progressbar)
+        self.merge_progressbar.setVisible(False)
         
         # Compress Progress Bar
         self.compress_progresslabel = QLabel("")
         self.compress_progressbar = QProgressBar()
         self.widgets["Step 2"].append(self.compress_progresslabel)
         self.widgets["Step 2"].append(self.compress_progressbar)
+        self.compress_progressbar.setVisible(False)
 
         # OCR Progress Bar
         self.ocr_progresslabel = QLabel("")
         self.ocr_progressbar = QProgressBar()
         self.widgets["Step 2"].append(self.ocr_progresslabel)
         self.widgets["Step 2"].append(self.ocr_progressbar)
+        self.ocr_progressbar.setVisible(False)
         
         
         # Done page header
-        done_header = QLabel("All of your PDFs are done!")
-        done_header.setObjectName("header")
-        self.widgets["Done"].append(done_header)
+        self.done_header = QLabel("Go to the previous pages to process PDFs!")
+        self.done_header.setObjectName("header")
+        self.widgets["Done"].append(self.done_header)
+
+        # Done page description
+        self.done_desc = QLabel("")
+        self.done_desc.setObjectName("step2desc")
+        self.widgets["Done"].append(self.done_desc)
+
+        # Cache clear header
+        cache_header = QLabel("Options (Clear Cache):")
+        cache_header.setObjectName("optionsheader")
+        self.widgets["Done"].append(cache_header)
+
+        # Cache clear description
+        cache_desc = QLabel("The button below is not necessary, but cleans up some of the space used in making the PDFs.")
+        cache_desc.setObjectName("step1desc")
+        self.widgets["Done"].append(cache_desc)
 
         # Clear Cache Button
         cache_button = QPushButton("Remove Cached Files")
@@ -205,9 +224,9 @@ class MainWindow(QMainWindow):
         # Setup the window layout.
         
         # Initialize pages.
-        pages = QTabWidget()
-        pages.setTabPosition(QTabWidget.TabPosition.South)
-        pages.setMovable(True)
+        self.pages = QTabWidget()
+        self.pages.setTabPosition(QTabWidget.TabPosition.South)
+        self.pages.setMovable(False)
 
         # Create page tabs.
         name_to_page = {
@@ -217,9 +236,9 @@ class MainWindow(QMainWindow):
             "Done!": self.create_page("Done"),
         }
         for name, page in name_to_page.items():
-            pages.addTab(page, name)
+            self.pages.addTab(page, name)
         
-        self.setCentralWidget(pages)
+        self.setCentralWidget(self.pages)
     
 
     # Create a dialogue window to ask for parent of folders to process.
@@ -267,11 +286,11 @@ class MainWindow(QMainWindow):
         # Create runner for PDF compression.
         self.compressRunner = JobRunner(self.folders_to_merge, "compress", self.save_path)
         self.compressRunner.signals.compress_progress.connect(self.update_func("compress"))
-        self.compressRunner.signals.compress_finished.connect(lambda _: self.threadpool.start(self.ocrRunner))
+        self.compressRunner.signals.compress_finished.connect(self.finish_compress)
         # Create runner for PDF OCR Scanninng.
         self.ocrRunner = JobRunner(self.folders_to_merge, "ocr", self.save_path)
         self.ocrRunner.signals.ocr_progress.connect(self.update_func("ocr"))
-        self.ocrRunner.signals.ocr_finished.connect(lambda _: print("OCR Finished."))
+        self.ocrRunner.signals.ocr_finished.connect(self.finish_ocr)
 
         # Setup progressbar ranges and labels.
         self.setup_progress_bars()
@@ -283,6 +302,7 @@ class MainWindow(QMainWindow):
     # Clear cahced files upon click.
     def cache_button_click(self):
         clear_all_pdf_folders()
+        self.reset_progress_bars()
 
 
     def save_processing_folders_and_parent(self, parent_directory):
@@ -322,8 +342,11 @@ class MainWindow(QMainWindow):
 
     
     # Set the label for a progress bar.
-    def make_label(self, label, message, value):
-        label.setText(f"{message} ({value} of {len(self.folders_to_merge)} completed)")
+    def make_label(self, label, message, value, ocr_started=False):
+        text = f"{message} ({value} of {len(self.folders_to_merge)} completed)"
+        if(ocr_started):
+            text += " - This may take a while..."
+        label.setText(text)
 
 
     # Returns a function for updating a progress bar to use with signals
@@ -331,7 +354,12 @@ class MainWindow(QMainWindow):
         # Function to activate upon receiving a signal.
         def update_progress_bar(value):
             bar.setValue(value)
-            self.make_label(label, message, value)
+            self.make_label(
+                label, 
+                message, 
+                value, 
+                message==self.ocr_msg and not self.start_of_processing
+            )
         return update_progress_bar
 
 
@@ -339,13 +367,19 @@ class MainWindow(QMainWindow):
     def update_func(self, category):
         category_to_update_func = {
             "merge": self.make_update_func(
-                    self.merge_progressbar, self.merge_progresslabel, self.merge_msg
+                    self.merge_progressbar, 
+                    self.merge_progresslabel, 
+                    self.merge_msg
                 ),
             "compress": self.make_update_func(
-                    self.compress_progressbar, self.compress_progresslabel, self.compress_msg
+                    self.compress_progressbar, 
+                    self.compress_progresslabel, 
+                    self.compress_msg
                 ),
             "ocr": self.make_update_func(
-                    self.ocr_progressbar, self.ocr_progresslabel, self.ocr_msg
+                    self.ocr_progressbar, 
+                    self.ocr_progresslabel, 
+                    self.ocr_msg
                 ),
         }
         return category_to_update_func[category]
@@ -358,10 +392,57 @@ class MainWindow(QMainWindow):
         self.compress_progressbar.setRange(0, len(self.folders_to_merge))
         self.ocr_progressbar.setRange(0, len(self.folders_to_merge))
 
+        # Show progress bars.
+        self.merge_progressbar.setVisible(True)
+        self.compress_progressbar.setVisible(True)
+        self.ocr_progressbar.setVisible(True)
+
         # Setup the labels for the progress bars.
         self.make_label(self.merge_progresslabel, self.merge_msg, 0)
         self.make_label(self.compress_progresslabel, self.compress_msg, 0)
         self.make_label(self.ocr_progresslabel, self.ocr_msg, 0)
+
+        # Reinitialize bars to reapply QSS styling.
+        self.update_func("merge")(0)
+        self.update_func("compress")(0)
+        self.update_func("ocr")(0)
+
+
+    def reset_progress_bars(self):
+        # Show progress bars.
+        self.merge_progressbar.setVisible(False)
+        self.compress_progressbar.setVisible(False)
+        self.ocr_progressbar.setVisible(False)
+
+        # Setup the labels for the progress bars.
+        self.merge_progresslabel.setText("")
+        self.compress_progresslabel.setText("")
+        self.ocr_progresslabel.setText("")
+
+        # Reinitialize bars to reapply QSS styling.
+        self.update_func("merge")(0)
+        self.update_func("compress")(0)
+        self.update_func("ocr")(0)
+
+
+    # Run upon finishing compression.
+    def finish_compress(self):
+        self.start_of_processing = False
+        self.make_label(self.ocr_progresslabel, self.ocr_msg, 0, True)
+        self.threadpool.start(self.ocrRunner)
+
+
+    # Run upon finishing OCR.
+    def finish_ocr(self):
+        # Update Done Page header.
+        self.done_header.setText("All of your PDFs are done!")
+        # Update save location reminder.
+        self.done_desc.setText(f"""<html>
+                <p>The OCR-processed PDFs are complete. You saved the PDFs at:</p>
+                <p>{self.save_path}</p>
+            </html>""")
+        # Navigate to Done page.
+        self.pages.setCurrentIndex(3)
 
 
 # You need one (and only one) QApplication instance per application.

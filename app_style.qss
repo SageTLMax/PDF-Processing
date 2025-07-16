@@ -40,6 +40,15 @@ QLabel#header {
   vertical-align: top;
 }
 
+QLabel#optionsheader {
+  font-size: 24px;
+  font-weight: bold;
+  padding-left: 0p;
+  margin-right: 1em;
+  max-height: 2em;
+  vertical-align: top;
+}
+
 QLabel#step1desc {
   max-height: 2em;
 }
@@ -98,7 +107,10 @@ QPushButton#cachebutton {
   background-color: lightcoral;
   color: rgb(247, 241, 241);
   border-color: rgb(156, 156, 156);
-  margin-bottom: 13em;
+  min-height: 1.1em;
+  max-height: 1.1em;
+  margin-bottom: 11em;
+  margin-top: 0.5em;
 }
 
 QPushButton#cachebutton:hover {
