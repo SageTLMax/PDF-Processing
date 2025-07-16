@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import Qt, QRunnable, pyqtSignal, pyqtSlot, QObject, QThreadPool
+from PyQt6 import QtGui
 from pathlib import Path
 
 from merge_to_pdf import merge_to_pdf
@@ -79,12 +80,14 @@ class MainWindow(QMainWindow):
             "Step 2": [],
             "Done": [],
         }
+        self.setWindowIcon(QtGui.QIcon("app_icon.png"))
+
         self.parent_folder = ""
-        self.save_location = "None (Please use the button below)"
-        self.save_path = ""
-        self.has_save_location = self.save_location != "None (Please use the button below)"
+        self.save_path = "None (Please use the button below)"
+        self.has_save_location = self.save_path != "None (Please use the button below)"
         self.folders_to_merge = []
 
+        # Some progress bar variables.
         self.merge_msg = "Generating PDFs..."
         self.compress_msg = "Compressing PDFs..."
         self.ocr_msg = "Applying OCR to PDFs..."
@@ -133,9 +136,23 @@ class MainWindow(QMainWindow):
         
         # Step 1 confirmation for folders to merge.
         self.parent_folder_conf = QLabel()
-        self.parent_folder_conf.setObjectName("parentconf")
-        self.parent_folder_conf.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.widgets["Step 1"].append(self.parent_folder_conf)
+        self.parent_folder_path = QLineEdit()
+        self.folder_list = QLabel()
+        self.parent_folder_path.setReadOnly(True)
+        self.parent_folder_path.setVisible(False)
+        self.folder_list.setObjectName("parentconf")
+        self.folder_list.setAlignment(Qt.AlignmentFlag.AlignTop)
+        # Setup layout for inline elements.
+        parent_layout = QHBoxLayout()
+        parent_layout.addWidget(self.parent_folder_conf)
+        parent_layout.addWidget(self.parent_folder_path)
+        folder_parent_container = QWidget()
+        folder_parent_container.setLayout(parent_layout)
+        
+        # Add widgets to page.
+        self.widgets["Step 1"].append(folder_parent_container)
+        self.widgets["Step 1"].append(self.folder_list)
+
 
         # Introduce Step 2 (Process the PDFs).
         step_2_header = QLabel("STEP 2: Process PDFs!")
@@ -153,8 +170,17 @@ class MainWindow(QMainWindow):
         self.widgets["Step 2"].append(step_2_desc)
 
         # Save location label
-        self.save_location_text = QLabel(f"Current save location: {self.save_location}")
-        self.widgets["Step 2"].append(self.save_location_text)
+        self.save_location_prefix = QLabel(f"Current save location: ")
+        self.save_location_text = QLineEdit(f"{self.save_path}")
+        self.save_location_text.setReadOnly(True)
+        # Set layout for label
+        save_location_layout = QHBoxLayout()
+        save_location_layout.addWidget(self.save_location_prefix)
+        save_location_layout.addWidget(self.save_location_text)
+        # Apply layout for label
+        save_location_container = QWidget()
+        save_location_container.setLayout(save_location_layout)
+        self.widgets["Step 2"].append(save_location_container)
         self.save_location_text.setObjectName("savelocation")
 
         # Save location button
@@ -259,10 +285,13 @@ class MainWindow(QMainWindow):
         # Step 2 button enabling/disabling
         self.check_can_process()
 
-        # Show what user has chosen as a QLabel.
+        # In line path confirmation for parent folder..
+        self.parent_folder_conf.setText("Choosing all folders in: ")
+        self.parent_folder_path.setText(f"{self.parent_folder}")
+        self.parent_folder_path.setVisible(True)
+        # List of folders in parent folder.
         bullets = ["<li>" + foldername + "</li>" for foldername in self.folders_to_merge.keys()]
-        self.parent_folder_conf.setText(f"""<html>
-            <p>Choosing all folders in {self.parent_folder.split("/")[-1]}:<p>
+        self.folder_list.setText(f"""<html>
             <ul>
                 {"".join(bullets)}
             </ul>
@@ -273,8 +302,7 @@ class MainWindow(QMainWindow):
         # Choose folder for saving PDFs
         window_title = "Choose Where to Save PDFs:"
         self.save_path = QFileDialog.getExistingDirectory(self, window_title, "")
-        self.save_location = self.save_path.split("/")[-1]
-        self.save_location_text.setText(f"Current save location: {self.save_location}")
+        self.save_location_text.setText(f"{self.save_path}")
         
         # Step 2 button enabling/disabling
         self.has_save_location = True

@@ -54,7 +54,8 @@ QLabel#step1desc {
 }
 
 QLabel#parentconf {
-  max-height: 15em;
+  min-height: 13.5em;
+  max-height: 13.5em;
 }
 
 QLabel#step2desc {
