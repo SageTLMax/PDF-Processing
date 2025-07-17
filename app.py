@@ -451,15 +451,16 @@ class MainWindow(QMainWindow):
         self.compress_progressbar.setVisible(False)
         self.ocr_progressbar.setVisible(False)
 
+        # Reinitialize bars to reapply QSS styling.
+        self.update_func("merge")(0)
+        self.update_func("compress")(0)
+        self.update_func("ocr")(0)
+
         # Setup the labels for the progress bars.
         self.merge_progresslabel.setText("")
         self.compress_progresslabel.setText("")
         self.ocr_progresslabel.setText("")
 
-        # Reinitialize bars to reapply QSS styling.
-        self.update_func("merge")(0)
-        self.update_func("compress")(0)
-        self.update_func("ocr")(0)
 
 
     # Run upon finishing compression.
