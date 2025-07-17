@@ -28,6 +28,7 @@ QLabel#title {
 
 QLabel#appdesc {
   padding-left: 11em;
+  padding-bottom: 5em;
 }
 
 QLabel#header {
