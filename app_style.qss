@@ -49,13 +49,22 @@ QLabel#optionsheader {
   vertical-align: top;
 }
 
-QLabel#step1desc {
-  max-height: 2em;
+QLabel#folderlist {
+  background-color: ghostwhite;
+  margin: 0;
+  padding-left: 2em;
+  padding-right: 2em;
+  padding-bottom: 3em;
 }
 
-QLabel#parentconf {
-  min-height: 13.5em;
-  max-height: 13.5em;
+QScrollArea {
+  min-height: 18em;
+  max-height: 18em;
+  background-color: none;
+}
+
+QLabel#step1desc {
+  max-height: 2em;
 }
 
 QLabel#step2desc {

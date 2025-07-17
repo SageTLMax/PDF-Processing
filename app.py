@@ -137,21 +137,24 @@ class MainWindow(QMainWindow):
         # Step 1 confirmation for folders to merge.
         self.parent_folder_conf = QLabel()
         self.parent_folder_path = QLineEdit()
-        self.folder_list = QLabel()
         self.parent_folder_path.setReadOnly(True)
         self.parent_folder_path.setVisible(False)
-        self.folder_list.setObjectName("parentconf")
-        self.folder_list.setAlignment(Qt.AlignmentFlag.AlignTop)
         # Setup layout for inline elements.
         parent_layout = QHBoxLayout()
         parent_layout.addWidget(self.parent_folder_conf)
         parent_layout.addWidget(self.parent_folder_path)
         folder_parent_container = QWidget()
         folder_parent_container.setLayout(parent_layout)
-        
+        # Setup folder list.
+        scroll_area = QScrollArea()
+        self.folder_list = QLabel()
+        self.folder_list.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.folder_list.setObjectName("folderlist")
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidget(self.folder_list)
         # Add widgets to page.
         self.widgets["Step 1"].append(folder_parent_container)
-        self.widgets["Step 1"].append(self.folder_list)
+        self.widgets["Step 1"].append(scroll_area)
 
 
         # Introduce Step 2 (Process the PDFs).
